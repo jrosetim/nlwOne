@@ -1,0 +1,7 @@
+rodar knex para criar as tabelas
+
+npx knex migrate:latest --knexfile knexfile.ts migrate:latest
+
+
+01:16
+------------------------------------------------------------------------
