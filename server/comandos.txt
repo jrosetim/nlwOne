@@ -2,6 +2,18 @@ rodar knex para criar as tabelas
 
 npx knex migrate:latest --knexfile knexfile.ts migrate:latest
 
-
-01:16
 ------------------------------------------------------------------------
+
+instalar expo
+
+npm install -g expo-cli
+
+criar projeto com expo
+
+expo init mobile
+
+bank(typescript)
+
+não trocar gerenciador de pacotes para o yarn, deixar npm
+
+executar npm start dentro da pasta mobile
