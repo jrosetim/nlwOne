@@ -1,5 +1,5 @@
-import React from 'react';
-import {View, StyleSheet, Text, ScrollView, Image} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {View, StyleSheet, Text, ScrollView, Image, Alert} from 'react-native';
 import { DefaultTheme } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import { Feather as Icon } from '@expo/vector-icons';
@@ -7,8 +7,21 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import MapView, { Marker} from 'react-native-maps';
 import { SvgUri } from 'react-native-svg'
+import * as Location from 'expo-location';
+
+import api from '../../services/api'
+
+interface item{
+  id: number,
+  title: string,
+  item_url: string
+}
 
 const Points = () => {
+  const [itemsResponse, setItems] = useState<item[]>([]);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [initialPosition, setInitialPosition] = useState<[number, number]>([0,0]);
+
   const navigation = useNavigation();
 
   function handleNavigateBack() {
@@ -17,6 +30,42 @@ const Points = () => {
 
   function handleNavigateToDetail() {
     navigation.navigate('Details');
+  };
+
+  useEffect( () => {
+    async function loadPosition() { 
+      const {status} = await Location.requestPermissionsAsync();
+
+      if (status !== 'granted'){
+        Alert.alert('OOppppppsss..', 'Precisamos de sua permissão para obter a localização');
+        return;
+      }
+      const location = await Location.getCurrentPositionAsync();
+
+      const {latitude, longitude} = location.coords;
+
+      setInitialPosition([latitude, longitude]);
+    }
+    
+    loadPosition();
+  }, []);  
+
+  useEffect( () => {
+    api.get('/items').then( response => {
+      setItems( response.data )
+    });
+  }, []);  
+
+  function handleSelectedItem(id: number){
+    const alreadySelected = selectedItems.findIndex(item => item === id);
+    
+    if (alreadySelected >= 0){
+      const filteredItems = selectedItems.filter(item => item !== id);
+
+      setSelectedItems(filteredItems);
+    }else{
+      setSelectedItems([...selectedItems, id]);
+    }
   };
 
   return( 
@@ -30,31 +79,36 @@ const Points = () => {
         <Text style={styles.description}> Encontre no mapa um ponto de coleta.</Text>
 
         <View style={styles.mapContainer}>
-          <MapView 
-            style={styles.map} 
-            initialRegion={{
-              latitude: -23.4433128,
-              longitude: -51.9262769,
-              latitudeDelta: 0.014,
-              longitudeDelta: 0.014
-            }}
-          >
-            <Marker 
-              onPress={handleNavigateToDetail}
-              style={styles.mapMarker}
-              coordinate={{
-                latitude: -23.4433128,
-                longitude: -51.9262769                
+         {
+           initialPosition[0] !== 0 && (
+            <MapView 
+              style={styles.map} 
+              loadingEnabled={initialPosition[0] === 0}
+              initialRegion={{
+                latitude: initialPosition[0],
+                longitude: initialPosition[1],
+                latitudeDelta: 0.014,
+                longitudeDelta: 0.014
               }}
-            > 
-              <View style={styles.mapMarkerContainer}>
-                <Image 
-                  style={styles.mapMarkerImage}
-                  source={{ uri: 'https://www.glutenfreebrasil.com/wp-content/uploads/2019/06/nrd-D6Tu_L3chLE-unsplash.jpg' }} />
-                  <Text style={styles.mapMarkerTitle}>Mercado</Text>
-              </View>
-            </Marker>
-          </MapView>   
+            >
+              <Marker 
+                onPress={handleNavigateToDetail}
+                style={styles.mapMarker}
+                coordinate={{
+                  latitude: -23.4433128,
+                  longitude: -51.9262769                
+                }}
+              > 
+                <View style={styles.mapMarkerContainer}>
+                  <Image 
+                    style={styles.mapMarkerImage}
+                    source={{ uri: 'https://www.glutenfreebrasil.com/wp-content/uploads/2019/06/nrd-D6Tu_L3chLE-unsplash.jpg' }} />
+                    <Text style={styles.mapMarkerTitle}>Mercado</Text>
+                </View>
+              </Marker>
+            </MapView>  
+           )
+         } 
         </View>
       </View>  
       <View style={styles.itemsContainer} >
@@ -63,41 +117,26 @@ const Points = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal:20}}
         >
-          <TouchableOpacity style={styles.item} onPress={ () => {} } >
-            <SvgUri width={42} height={42} uri="http://192.168.100.57:3333/uploads/lampadas.svg" ></SvgUri>
-            <Text style={styles.itemTitle}>Lâmpada</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.item} onPress={ () => {} } >
-            <SvgUri width={42} height={42} uri="http://192.168.100.57:3333/uploads/lampadas.svg" ></SvgUri>
-            <Text style={styles.itemTitle}>Lâmpada</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.item} onPress={ () => {} } >
-            <SvgUri width={42} height={42} uri="http://192.168.100.57:3333/uploads/lampadas.svg" ></SvgUri>
-            <Text style={styles.itemTitle}>Lâmpada</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.item} onPress={ () => {} } >
-            <SvgUri width={42} height={42} uri="http://192.168.100.57:3333/uploads/lampadas.svg" ></SvgUri>
-            <Text style={styles.itemTitle}>Lâmpada</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.item} onPress={ () => {} } >
-            <SvgUri width={42} height={42} uri="http://192.168.100.57:3333/uploads/lampadas.svg" ></SvgUri>
-            <Text style={styles.itemTitle}>Lâmpada</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.item} onPress={ () => {} } >
-            <SvgUri width={42} height={42} uri="http://192.168.100.57:3333/uploads/lampadas.svg" ></SvgUri>
-            <Text style={styles.itemTitle}>Lâmpada</Text>
-          </TouchableOpacity>        
+          { itemsResponse.map( item => (
+            <TouchableOpacity 
+              key={String(item.id)} 
+              style={[
+                styles.item,
+                selectedItems.includes(item.id) ? styles.selectedItem : {}
+              ]} 
+              onPress={ () => handleSelectedItem(item.id) } 
+              activeOpacity={0.6}
+            >
+              <SvgUri width={42} height={42} uri={item.item_url} ></SvgUri>
+              <Text style={styles.itemTitle}>{item.title}</Text>
+            </TouchableOpacity>
+          ))
+          }
         </ScrollView>
       </View>
     </>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
