@@ -1,16 +1,38 @@
 import React, {useEffect, useState} from 'react';
 import {View, StyleSheet, Image, Text, SafeAreaView} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { TouchableOpacity, RectButton } from 'react-native-gesture-handler';
 import { Feather as Icon, FontAwesome } from '@expo/vector-icons';
 import Constants from 'expo-constants';
+import api from '../../services/api'
+interface Params{
+  pointId: number
+}
+
+interface Point{
+  image: string,
+  name: string,
+  whatsapp: string,
+  city: string,
+  uf: string  
+}
 
 const Details = () => {
   const navigation = useNavigation();
-  
+  const route = useRoute();
+  const [point, setPoint] = useState<Point[]>([])
+
+  const routeParams = route.params as Params;
   function handleNavigateToBack(){
     navigation.goBack();
   }
+  
+  useEffect( () =>{
+    api.get(`point/${routeParams.pointId}`).then(response => {
+      setPoint(response.data)
+    })
+  })
+
 
   return (
   <SafeAreaView style={{ flex: 1 }}>  

@@ -11,16 +11,25 @@ import * as Location from 'expo-location';
 
 import api from '../../services/api'
 
-interface item{
+interface Item{
   id: number,
   title: string,
   item_url: string
 }
 
+interface Point{
+  id: number,
+  image: string,
+  name: string,
+  latitude: number,
+  longitude: number
+}
+
 const Points = () => {
-  const [itemsResponse, setItems] = useState<item[]>([]);
+  const [itemsResponse, setItems] = useState<Item[]>([]);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [initialPosition, setInitialPosition] = useState<[number, number]>([0,0]);
+  const [pointsFilter, setPoints] = useState<Point[]>([]);
 
   const navigation = useNavigation();
 
@@ -28,8 +37,8 @@ const Points = () => {
     navigation.goBack();
   };
 
-  function handleNavigateToDetail() {
-    navigation.navigate('Details');
+  function handleNavigateToDetail(id: number) {
+    navigation.navigate('Details', {pointId: id});
   };
 
   useEffect( () => {
@@ -51,10 +60,24 @@ const Points = () => {
   }, []);  
 
   useEffect( () => {
-    api.get('/items').then( response => {
+    api.get('items').then( response => {
       setItems( response.data )
     });
   }, []);  
+
+  useEffect( () => {
+    api.get('points', {
+      params: {
+        city: 'Maringa',
+        uf: 'PR',
+        items: [1,2]
+      }
+    }).then( response => {
+      setPoints(response.data);
+
+      console.log(pointsFilter);
+    })
+  }, [] );
 
   function handleSelectedItem(id: number){
     const alreadySelected = selectedItems.findIndex(item => item === id);
@@ -91,21 +114,28 @@ const Points = () => {
                 longitudeDelta: 0.014
               }}
             >
-              <Marker 
-                onPress={handleNavigateToDetail}
-                style={styles.mapMarker}
-                coordinate={{
-                  latitude: -23.4433128,
-                  longitude: -51.9262769                
-                }}
-              > 
-                <View style={styles.mapMarkerContainer}>
-                  <Image 
-                    style={styles.mapMarkerImage}
-                    source={{ uri: 'https://www.glutenfreebrasil.com/wp-content/uploads/2019/06/nrd-D6Tu_L3chLE-unsplash.jpg' }} />
-                    <Text style={styles.mapMarkerTitle}>Mercado</Text>
-                </View>
-              </Marker>
+              {
+                pointsFilter.map( point =>(
+
+                  <Marker 
+                    key={String(point.id)}
+                    onPress={ () => handleNavigateToDetail(point.id)}
+                    style={styles.mapMarker}
+                    coordinate={{
+                      latitude: point.latitude,
+                      longitude: point.longitude
+                    }}
+                  > 
+                    <View style={styles.mapMarkerContainer}>
+                      <Image 
+                        style={styles.mapMarkerImage}
+                        source={{ uri: point.image }} />
+                        <Text style={styles.mapMarkerTitle}>{point.name}</Text>
+                    </View>
+                  </Marker>
+                ))
+              }  
+
             </MapView>  
            )
          } 
