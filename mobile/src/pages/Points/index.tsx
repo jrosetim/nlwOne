@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {View, StyleSheet, Text, ScrollView, Image, Alert} from 'react-native';
-import { DefaultTheme } from '@react-navigation/native';
+import { DefaultTheme, useRoute } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import { Feather as Icon } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native-gesture-handler';
@@ -25,6 +25,11 @@ interface Point{
   longitude: number
 }
 
+interface Params{
+  uf: string;
+  city: string;
+}
+
 const Points = () => {
   const [itemsResponse, setItems] = useState<Item[]>([]);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
@@ -32,6 +37,10 @@ const Points = () => {
   const [pointsFilter, setPoints] = useState<Point[]>([]);
 
   const navigation = useNavigation();
+
+  const route = useRoute();
+
+  const routeParams = route.params as Params;
 
   function handleNavigateBack() {
     navigation.goBack();
@@ -68,16 +77,14 @@ const Points = () => {
   useEffect( () => {
     api.get('points', {
       params: {
-        city: 'Maringa',
-        uf: 'PR',
-        items: [1,2]
+        city: routeParams.city,
+        uf: routeParams.uf,
+        items: selectedItems
       }
     }).then( response => {
       setPoints(response.data);
-
-      console.log(pointsFilter);
     })
-  }, [] );
+  }, [selectedItems] );
 
   function handleSelectedItem(id: number){
     const alreadySelected = selectedItems.findIndex(item => item === id);
