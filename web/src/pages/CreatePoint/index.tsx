@@ -6,9 +6,9 @@ import api from '../../services/api'
 import axios from 'axios';
 import { LeafletMouseEvent } from 'leaflet';
 import Dropzone from '../../components/Dropzone'
-
 import './style.css';
 import logo from '../../assets/logo.svg';
+import {config as dotEnvConfig} from 'dotenv';
 
 interface Item{
   id: number;
@@ -24,8 +24,9 @@ interface IbgeCityResponse {
   nome: string;
 };
 
-
 const CreatePoint = () => {
+  console.log( 'Front-end ' + process.env.API_URL);
+
   const [items, setitems] = useState<Item[]>([]);
   const [ufs, setUf] = useState<string[]>([]);
   const [cities, setCities] = useState<string[]>([]);
@@ -41,7 +42,6 @@ const CreatePoint = () => {
     email: '',
     whatsapp: ''
   });
-
 
   const history = useHistory();
 
@@ -63,15 +63,14 @@ const CreatePoint = () => {
   useEffect( () => {
     if (selectedUf === '0'){
       return;
-    };
+  };
 
-    axios.get<IbgeCityResponse[]>(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`)
-     .then(response => {
-         const cityNames = response.data.map(city => city.nome);
+  axios.get<IbgeCityResponse[]>(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`)
+    .then(response => {
+      const cityNames = response.data.map(city => city.nome);
         
-         setCities( cityNames );
-     });
-
+      setCities( cityNames );
+    });
   }, [selectedUf]);
 
   useEffect( () =>{
@@ -148,8 +147,8 @@ const CreatePoint = () => {
 
     history.push('/');
   }
-
-  return(
+  
+  return(  
     <div id="page-create-point">
       <header>
         <img src={logo} alt="Ecoleta"/>
